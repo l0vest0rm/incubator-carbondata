@@ -90,27 +90,6 @@ public class SegmentStatusManager {
     }
   }
 
-  public List<Long> getUpdateDeltaStartEndTimeStamp(final String loadIds,
-      LoadMetadataDetails[] listOfLoadFolderDetailsArray) {
-    List<Long> updateDeltaStartEndTimestamp = new ArrayList<>();
-    for (LoadMetadataDetails loadMetadata : listOfLoadFolderDetailsArray) {
-      if (loadIds.equalsIgnoreCase(loadMetadata.getLoadName())) {
-        // Make sure the Load is not compacted and not marked for delete.
-        if (CarbonCommonConstants.COMPACTED
-                .equalsIgnoreCase(loadMetadata.getLoadStatus())) {
-          return null;
-        } else if (CarbonCommonConstants.MARKED_FOR_DELETE.equals(loadMetadata.getLoadStatus())) {
-          return null;
-        }
-        else {
-          return updateDeltaStartEndTimestamp;
-        }
-      }
-    }
-    return null;
-  }
-
-
   /**
    * get valid segment for given table
    *
@@ -139,8 +118,7 @@ public class SegmentStatusManager {
                 new BufferedReader(new InputStreamReader(dataInputStream, "UTF-8"));
         loadFolderDetailsArray = gsonObjectToRead.fromJson(buffReader, LoadMetadataDetails[].class);
         //just directly iterate Array
-        List<LoadMetadataDetails> loadFolderDetails = Arrays.asList(loadFolderDetailsArray);
-        for (LoadMetadataDetails loadMetadataDetails : loadFolderDetails) {
+        for (LoadMetadataDetails loadMetadataDetails : loadFolderDetailsArray) {
           if (CarbonCommonConstants.STORE_LOADSTATUS_SUCCESS
                   .equalsIgnoreCase(loadMetadataDetails.getLoadStatus())
                   || CarbonCommonConstants.MARKED_FOR_UPDATE
@@ -277,7 +255,7 @@ public class SegmentStatusManager {
           updateDeletionStatus(loadIds, listOfLoadFolderDetailsArray, invalidLoadIds);
           if (invalidLoadIds.isEmpty()) {
             // All or None , if anything fails then dont write
-            if(carbonTableStatusLock.lockWithRetries()) {
+            if (carbonTableStatusLock.lockWithRetries()) {
               LOG.info("Table status lock has been successfully acquired");
               // To handle concurrency scenarios, always take latest metadata before writing
               // into status file.
@@ -360,7 +338,7 @@ public class SegmentStatusManager {
           updateDeletionStatus(loadDate, listOfLoadFolderDetailsArray, invalidLoadTimestamps,
               loadStartTime);
           if (invalidLoadTimestamps.isEmpty()) {
-            if(carbonTableStatusLock.lockWithRetries()) {
+            if (carbonTableStatusLock.lockWithRetries()) {
               LOG.info("Table status lock has been successfully acquired.");
               // To handle concurrency scenarios, always take latest metadata before writing
               // into status file.
@@ -590,11 +568,11 @@ public class SegmentStatusManager {
    * @return
    */
   public String getUpdateStatusFileName(LoadMetadataDetails[] segmentList) {
-    if(segmentList.length == 0) {
+    if (segmentList.length == 0) {
       return "";
     }
     else {
-      for(LoadMetadataDetails eachSeg : segmentList) {
+      for (LoadMetadataDetails eachSeg : segmentList) {
         // file name stored in 0th segment.
         if (eachSeg.getLoadName().equalsIgnoreCase("0")) {
           return eachSeg.getUpdateStatusFileName();
